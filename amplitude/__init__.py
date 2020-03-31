@@ -31,7 +31,8 @@ class AmplitudeLogger:
         if value is None or type(value) is not str:
             return True
 
-    def create_event(self, user_id=None, device_id=None, **kwargs):
+    def create_event(self, user_id=None, device_id=None, event_type=None, event_properties=None,
+                     user_properties=None, time_ms=None):
         event = {}
 
         if self._is_None_or_not_str(user_id) or self._is_None_or_not_str(device_id):
@@ -40,22 +41,29 @@ class AmplitudeLogger:
             event["device_id"] = device_id
             event["user_id"] = user_id
 
-        user_properties = kwargs.get('user_properties', None)
-        if user_properties is not None and type(user_properties) == dict:
-            event["user_properties"] = user_properties
+        if user_properties is not None:
+            if type(user_properties) == dict:
+                event["user_properties"] = user_properties
+            else:
+                raise ValueError("user_properties must be a dict")
 
-        event_type = kwargs.get('event_type', None)
         if self._is_None_or_not_str(event_type):
             raise ValueError("Specify event_type")
 
         event["event_type"] = event_type
 
         # integer epoch time in milliseconds
-        event["time"] = int(time.time() * 1000)
+        if time_ms:
+            event["time"] = time_ms
+        else:
+            # current time
+            event["time"] = int(time.time() * 1000)
 
-        event_properties = kwargs.get('event_properties', None)
-        if event_properties is not None and type(event_properties) == dict:
-            event["event_properties"] = event_properties
+        if event_properties:
+            if type(event_properties) == dict:
+                event["event_properties"] = event_properties
+            else:
+                raise ValueError("event_properties must be a dict")
 
         event_package = {
             'api_key': self.api_key,
