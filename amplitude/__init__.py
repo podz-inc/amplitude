@@ -2,13 +2,16 @@ import requests
 import time
 import json
 
+# Original implementation borrowed
+# from https://github.com/abinba/amplitude-python
+
 # Documentation of AmplitudeHTTP API:
 #   https://amplitude.zendesk.com/hc/en-us/articles/204771828
 #
 # Convert Curl queries - such as below to - python:
 #   https://curl.trillworks.com/
 #
-# Example HTTP Curl Query for Amplitude: 
+# Example HTTP Curl Query for Amplitude:
 #   curl --data 'api_key=SOMEIDOFAKIND' --data 'event=[{"user_id":"john_doe@gmail.com", "event_type":"watch_tutorial", "user_properties":{"Cohort":"Test A"}, "country":"United States", "ip":"127.0.0.1", "time":1396381378123}]' https://api.amplitude.com/httpapi
 
 
@@ -27,14 +30,12 @@ class AmplitudeLogger:
     def _is_None_or_not_str(self, value):
         if value is None or type(value) is not str:
             return True
-        
-    def create_event(self, **kwargs):
+
+    def create_event(self, user_id=None, device_id=None, **kwargs):
         event = {}
-        user_id = kwargs.get('user_id', None)
-        device_id = kwargs.get('device_id', None)
 
         if self._is_None_or_not_str(user_id) or self._is_None_or_not_str(device_id):
-            return None
+            raise ValueError("Specify either user_id or device_id")
         else:
             event["device_id"] = device_id
             event["user_id"] = user_id
@@ -45,13 +46,13 @@ class AmplitudeLogger:
 
         event_type = kwargs.get('event_type', None)
         if self._is_None_or_not_str(event_type):
-            return None
+            raise ValueError("Specify event_type")
 
         event["event_type"] = event_type
-        
-        # integer epoch time in milliseconds 
-        event["time"] = int(time.time()*1000)
-        
+
+        # integer epoch time in milliseconds
+        event["time"] = int(time.time() * 1000)
+
         event_properties = kwargs.get('event_properties', None)
         if event_properties is not None and type(event_properties) == dict:
             event["event_properties"] = event_properties
