@@ -2,8 +2,6 @@ import requests
 import time
 import json
 
-# Original implementation borrowed
-# from https://github.com/abinba/amplitude-python
 
 # Documentation of AmplitudeHTTP API:
 #   https://amplitude.zendesk.com/hc/en-us/articles/204771828
@@ -33,6 +31,22 @@ class AmplitudeLogger:
 
     def create_event(self, user_id=None, device_id=None, event_type=None, event_properties=None,
                      user_properties=None, time_ms=None):
+        """
+        Creates and returns event payload dictionary. Use log_event to send it.
+
+        :param user_id: (required unless device_id is present) A readable ID specified by you.
+        :param device_id: (required unless user_id is present) A device specific identifier,
+                          such as the Identifier for Vendor on iOS.
+        :param event_type: (required) A unique identifier for your event.
+        :param event_properties: A dictionary of key-value pairs that represent additional data to be sent along with the event.
+                                 You can store property values in an array,
+                                 and date values are transformed into string values.
+        :param user_properties: A dictionary of key-value pairs that represent additional data tied to the user.
+                                Each distinct value will show up as a user segment on the Amplitude dashboard.
+        :param time_ms: The timestamp of the event in milliseconds since epoch. This will update the client event time.
+                        If not specified, this value will assume the server upload time by default.
+        :return:
+        """
         event = {}
 
         if self._is_None_or_not_str(user_id) or self._is_None_or_not_str(device_id):
@@ -73,7 +87,38 @@ class AmplitudeLogger:
         return event_package
 
     def log_event(self, event):
+        """
+        Sends event to amplitude. Use create_event to create the payload.
+        :param event: event payload dictionary
+        :return:
+        """
         if event is not None:
             if self.is_logging:
                 result = requests.post(self.api_uri, json=event)
                 return result
+        else:
+            raise Exception("Cannot log empty event")
+
+    def track(self, user_id=None, device_id=None, event_type=None, event_properties=None,
+              user_properties=None, time_ms=None):
+        """
+        Tracks event with specified parameters.
+
+        :param user_id: (required unless device_id is present) A readable ID specified by you.
+        :param device_id: (required unless user_id is present) A device specific identifier,
+                          such as the Identifier for Vendor on iOS.
+        :param event_type: (required) A unique identifier for your event.
+        :param event_properties: A dictionary of key-value pairs that represent additional data to be sent along with the event.
+                                 You can store property values in an array,
+                                 and date values are transformed into string values.
+        :param user_properties: A dictionary of key-value pairs that represent additional data tied to the user.
+                                Each distinct value will show up as a user segment on the Amplitude dashboard.
+        :param time_ms: The timestamp of the event in milliseconds since epoch. This will update the client event time.
+                        If not specified, this value will assume the server upload time by default.
+        :return:
+        """
+
+        self.log_event(
+            self.create_event(user_id=user_id, device_id=device_id, event_type=event_type,
+                              event_properties=event_properties,
+                              user_properties=user_properties, time_ms=time_ms))
