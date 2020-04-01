@@ -22,7 +22,6 @@ $ python setup.py instal
 ```
 
 ## 2. Logging to Amplitude with amplitude-python
-Recommend having a look at [Amplitude HTTP API Documentation](https://amplitude.zendesk.com/hc/en-us/articles/204771828-HTTP-API) before start logging.
 
 ```python
 import amplitude	
@@ -30,15 +29,12 @@ import amplitude
 # initialize amplitude logger
 amplitude_logger = amplitude.AmplitudeLogger(api_key = "SOME_API_KEY_STRING")
 
-# example event
-event_args = {"device_id":"somedeviceid", "event_type":"justtesting", 
-              "event_properties":{"property1":"somevalue", "propertyN":"anothervalue"}
-event = amplitude_logger.create_event(**event_args)
-
-# send event to amplitude
-amplitude_logger.log_event(event)
+# track an event to amplitude
+amplitude_logger.track(device_id="somedeviceid", event_type:"Registration", event_properties={"screen": "First"}, user_properties={"email": "jon@doe.com"})
 
 ```
+
+API Reference can be found here – [Amplitude HTTP API Documentation](https://amplitude.zendesk.com/hc/en-us/articles/204771828-HTTP-API) before start logging.
 
 ## 3. Test amplitude-python module
 ```
