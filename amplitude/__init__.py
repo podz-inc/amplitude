@@ -6,13 +6,17 @@ import json
 #
 
 # Documentation of AmplitudeHTTP API:
-#   https://amplitude.zendesk.com/hc/en-us/articles/204771828
+#   https://developers.amplitude.com/docs/http-api-v2
 #
 # Convert Curl queries - such as below to - python:
 #   https://curl.trillworks.com/
 #
 # Example HTTP Curl Query for Amplitude:
-#   curl --data 'api_key=SOMEIDOFAKIND' --data 'event=[{"user_id":"john_doe@gmail.com", "event_type":"watch_tutorial", "user_properties":{"Cohort":"Test A"}, "country":"United States", "ip":"127.0.0.1", "time":1396381378123}]' https://api.amplitude.com/httpapi
+#
+# curl --data 'api_key=SOMEIDOFAKIND' \
+#      --data 'event=[{"user_id":"john_doe@gmail.com", "event_type":"watch_tutorial", "user_properties":{"Cohort":"Test A"}, "country":"United States", "ip":"127.0.0.1", "time":1396381378123}]' \
+#      https://api.amplitude.com/httpapi
+#
 
 
 class AmplitudeLogger:
@@ -27,12 +31,25 @@ class AmplitudeLogger:
     def turn_off_logging(self):
         self.is_logging = False
 
-    def _is_None_or_not_str(self, value):
-        if value is None or type(value) is not str:
+    def _is_None_or_not_str(self, value) -> bool:
+        if value is None:
             return True
+        if not isinstance(value, str):
+            return True
+        return False
 
-    def create_event(self, user_id=None, device_id=None, event_type=None, event_properties=None,
-                     user_properties=None, time_ms=None, min_id_length=None, platform=None, additional_data=None):
+    def create_event(
+        self,
+        user_id=None,
+        device_id=None,
+        event_type=None,
+        event_properties=None,
+        user_properties=None,
+        time_ms=None,
+        min_id_length=None,
+        platform=None,
+        additional_data=None,
+    ):
         """
         Creates and returns event payload dictionary. Use log_event to send it.
 
@@ -90,14 +107,12 @@ class AmplitudeLogger:
             event.update(additional_data)
 
         event_package = {
-            'api_key': self.api_key,
-            'events': [event],       # TODO: add api to send event batches
+            "api_key": self.api_key,
+            "events": [event],  # TODO: add api to send event batches
         }
 
         if min_id_length:
-            event_package['options'] = {
-                'min_id_length': min_id_length
-            }
+            event_package["options"] = {"min_id_length": min_id_length}
 
         return event_package
 
@@ -114,8 +129,17 @@ class AmplitudeLogger:
         else:
             raise Exception("Cannot log empty event")
 
-    def track(self, user_id=None, device_id=None, event_type=None, event_properties=None,
-              user_properties=None, time_ms=None, min_id_length=None, platform=None):
+    def track(
+        self,
+        user_id=None,
+        device_id=None,
+        event_type=None,
+        event_properties=None,
+        user_properties=None,
+        time_ms=None,
+        min_id_length=None,
+        platform=None,
+    ):
         """
         Tracks event with specified parameters.
 
@@ -134,9 +158,16 @@ class AmplitudeLogger:
         """
 
         result = self.log_event(
-            self.create_event(user_id=user_id, device_id=device_id, event_type=event_type,
-                              event_properties=event_properties,
-                              user_properties=user_properties, time_ms=time_ms,
-                              min_id_length=min_id_length, platform=platform))
+            self.create_event(
+                user_id=user_id,
+                device_id=device_id,
+                event_type=event_type,
+                event_properties=event_properties,
+                user_properties=user_properties,
+                time_ms=time_ms,
+                min_id_length=min_id_length,
+                platform=platform,
+            )
+        )
 
         return result
