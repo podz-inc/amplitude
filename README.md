@@ -24,7 +24,7 @@ $ python setup.py instal
 ## 2. Logging to Amplitude with amplitude-python
 
 ```python
-import amplitude	
+import amplitude
 
 # initialize amplitude logger
 amplitude_logger = amplitude.AmplitudeLogger(api_key = "SOME_API_KEY_STRING")
