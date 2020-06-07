@@ -11,11 +11,7 @@ import uuid
 # Convert Curl queries - such as below to - python:
 #   https://curl.trillworks.com/
 #
-# Example HTTP Curl Query for Amplitude:
-#
-# curl --data 'api_key=SOMEIDOFAKIND' \
-#      --data 'event=[{"user_id":"john_doe@gmail.com", "event_type":"watch_tutorial", "user_properties":{"Cohort":"Test A"}, "country":"United States", "ip":"127.0.0.1", "time":1396381378123}]' \
-#      https://api.amplitude.com/httpapi
+# TODO: Example HTTP Curl Query for Amplitude:
 #
 
 
