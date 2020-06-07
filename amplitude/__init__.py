@@ -120,21 +120,36 @@ class AmplitudeLogger:
 
         return event
 
-    def log_event(self, pkg):
+    def log_event_package(self, pkg):
         """
-        Sends event to amplitude. Use create_event to create the payload.
+        Sends event(s) to amplitude.
+
         :param event: event payload dictionary
         :return:
         """
-        if event:
-            if self.is_logging:
-                result = self._sess.post(self.api_uri, json=pkg)
-                #
-                # TODO: handle error codes
-                #
-                return result
-        else:
-            raise Exception("Cannot log empty event")
+        assert pkg, 'Cannot log empty event package'
+        if self.is_logging:
+            result = self._sess.post(self.api_uri, json=pkg)
+            #
+            # TODO: handle error codes
+            #
+            return result
+
+    # def log_event(self, event):
+    #     """
+    #     Sends event to amplitude. Use create_event to create the payload.
+    #     :param event: event payload dictionary
+    #     :return:
+    #     """
+    #     if event:
+    #         if self.is_logging:
+    #             result = self._sess.post(self.api_uri, json=pkg)
+    #             #
+    #             # TODO: handle error codes
+    #             #
+    #             return result
+    #     else:
+    #         raise Exception("Cannot log empty event")
 
     def track(
         self,
@@ -181,7 +196,7 @@ class AmplitudeLogger:
             )
         ]
 
-        result = self.log_event(
+        result = self.log_event_package(
             self.create_event_package(options=options, events=events)
         )
 
@@ -191,4 +206,4 @@ class AmplitudeLogger:
         #
         # TODO: handle batches larger than 10
         #
-        return self.log_event(self.create_event_package(events=events))
+        return self.log_event_package(self.create_event_package(events=events))
