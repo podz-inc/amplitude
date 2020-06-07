@@ -118,15 +118,6 @@ class AmplitudeLogger:
 
         event['insert_id'] = str(uuid.uuid4())
 
-        # event_package = {
-        #     "api_key": self.api_key,
-        #     "events": [event],  # TODO: add api to send event batches
-        # }
-
-        # if min_id_length:
-        #     event_package["options"] = {"min_id_length": min_id_length}
-
-        # return event_package
         return event
 
     def log_event(self, pkg):
