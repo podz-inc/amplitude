@@ -39,7 +39,7 @@ class AmplitudeLogger:
     def _is_None_or_not_str(self, value) -> bool:
         return bool(value is None or not isinstance(value, str))
 
-    def create_event_pacakge(self, events, options=None):
+    def create_event_package(self, events, options=None):
         """
         """
         event_package = {
@@ -191,7 +191,7 @@ class AmplitudeLogger:
         ]
 
         result = self.log_event(
-            self.create_event_pacakge(options=options, events=events)
+            self.create_event_package(options=options, events=events)
         )
 
         return result
@@ -200,4 +200,4 @@ class AmplitudeLogger:
         #
         # TODO: handle batches larger than 10
         #
-        return self.log_event(self.create_event_pacakge(events=events))
+        return self.log_event(self.create_event_package(events=events))
