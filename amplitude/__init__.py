@@ -1,6 +1,6 @@
 import requests
 import time
-import json
+import uuid
 
 # The source repo is here - https://github.com/DataGreed/amplitude-python
 #
@@ -19,11 +19,20 @@ import json
 #
 
 
+#
+# rate limits
+# potentially across multiple machines ...
+#
+
+
 class AmplitudeLogger:
     def __init__(self, api_key, api_uri="https://api.amplitude.com/2/httpapi"):
         self.api_key = api_key
         self.api_uri = api_uri
         self.is_logging = True
+
+        s = self._sess = requests.Session()
+        s.headers.update(headers={"Content-Type": "application/json", "Accept": "*/*"})
 
     def turn_on_logging(self):
         self.is_logging = True
@@ -32,23 +41,30 @@ class AmplitudeLogger:
         self.is_logging = False
 
     def _is_None_or_not_str(self, value) -> bool:
-        if value is None:
-            return True
-        if not isinstance(value, str):
-            return True
-        return False
+        return bool(value is None or not isinstance(value, str))
+
+    def create_event_pacakge(self, events, options=None):
+        """
+        """
+        event_package = {
+            "api_key": self.api_key,
+            "events": events,
+        }
+        if options:
+            event_package["options"] = options
+        return event_package
 
     def create_event(
         self,
-        user_id=None,
-        device_id=None,
-        event_type=None,
-        event_properties=None,
-        user_properties=None,
-        time_ms=None,
+        user_id: str = None,
+        device_id: str = None,
+        event_type: str = None,
+        event_properties: dict = None,
+        user_properties: dict = None,
+        time_ms: float = None,
         min_id_length=None,
-        platform=None,
-        additional_data=None,
+        platform: str = None,
+        additional_data: dict = None,
     ):
         """
         Creates and returns event payload dictionary. Use log_event to send it.
@@ -70,12 +86,14 @@ class AmplitudeLogger:
 
         if not user_id and not device_id:
             raise ValueError("Specify either user_id or device_id")
-        else:
+
+        if device_id:
             event["device_id"] = str(device_id)
+        if user_id:
             event["user_id"] = str(user_id)
 
         if user_properties is not None:
-            if type(user_properties) == dict:
+            if isinstance(user_properties, dict):
                 event["user_properties"] = user_properties
             else:
                 raise ValueError("user_properties must be a dict")
@@ -86,17 +104,13 @@ class AmplitudeLogger:
         event["event_type"] = event_type
 
         # integer epoch time in milliseconds
-        if time_ms:
-            event["time"] = time_ms
-        else:
-            # current time
-            event["time"] = int(time.time() * 1000)
+        event["time"] = time_ms or int(time.time() * 1000)
 
         if platform:
             event["platform"] = platform
 
         if event_properties:
-            if type(event_properties) == dict:
+            if isinstance(event_properties, dict):
                 event["event_properties"] = event_properties
             else:
                 raise ValueError("event_properties must be a dict")
@@ -106,25 +120,31 @@ class AmplitudeLogger:
         if isinstance(additional_data, dict):
             event.update(additional_data)
 
-        event_package = {
-            "api_key": self.api_key,
-            "events": [event],  # TODO: add api to send event batches
-        }
+        event['insert_id'] = str(uuid.uuid4())
 
-        if min_id_length:
-            event_package["options"] = {"min_id_length": min_id_length}
+        # event_package = {
+        #     "api_key": self.api_key,
+        #     "events": [event],  # TODO: add api to send event batches
+        # }
 
-        return event_package
+        # if min_id_length:
+        #     event_package["options"] = {"min_id_length": min_id_length}
 
-    def log_event(self, event):
+        # return event_package
+        return event
+
+    def log_event(self, pkg):
         """
         Sends event to amplitude. Use create_event to create the payload.
         :param event: event payload dictionary
         :return:
         """
-        if event is not None:
+        if event:
             if self.is_logging:
-                result = requests.post(self.api_uri, json=event)
+                result = self._sess.post(self.api_uri, json=pkg)
+                #
+                # TODO: handle error codes
+                #
                 return result
         else:
             raise Exception("Cannot log empty event")
@@ -157,7 +177,11 @@ class AmplitudeLogger:
         :return:
         """
 
-        result = self.log_event(
+        options = None
+        if min_id_length:
+            options = {"min_id_length": min_id_length}
+
+        events = [
             self.create_event(
                 user_id=user_id,
                 device_id=device_id,
@@ -168,6 +192,16 @@ class AmplitudeLogger:
                 min_id_length=min_id_length,
                 platform=platform,
             )
+        ]
+
+        result = self.log_event(
+            self.create_event_pacakge(options=options, events=events)
         )
 
         return result
+
+    def track_batch(self, batch: list):
+        #
+        # TODO: handle batches larger than 10
+        #
+        return self.log_event(self.create_event_pacakge(events=events))
