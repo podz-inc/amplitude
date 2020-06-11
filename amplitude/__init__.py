@@ -28,7 +28,7 @@ class AmplitudeLogger:
         self.is_logging = True
 
         s = self._sess = requests.Session()
-        s.headers.update(headers={"Content-Type": "application/json", "Accept": "*/*"})
+        s.headers.update({"Content-Type": "application/json", "Accept": "*/*"})
 
     def turn_on_logging(self):
         self.is_logging = True
