@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='amplitude-python',
     keywords='python wrapper for amplitude.com HTTP API',
-    version='0.1.2',
+    version='0.1.3',
     packages=find_packages(),
     long_description=open('README.txt').read(),
     test_suite='nose.collector',
