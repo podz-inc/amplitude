@@ -102,3 +102,4 @@ ENV/
 
 # pypi submission
 .pypirc
+.DS_Store
