@@ -1,6 +1,7 @@
-import requests
 import time
 import uuid
+
+import requests
 
 # The source repo is here - https://github.com/DataGreed/amplitude-python
 #
@@ -40,8 +41,7 @@ class AmplitudeLogger:
         return bool(value is None or not isinstance(value, str))
 
     def create_event_package(self, events, options=None):
-        """
-        """
+        """"""
         event_package = {
             "api_key": self.api_key,
             "events": events,
@@ -61,6 +61,7 @@ class AmplitudeLogger:
         min_id_length=None,
         platform: str = None,
         additional_data: dict = None,
+        insert_id: str = None,
     ):
         """
         Creates and returns event payload dictionary. Use log_event to send it.
@@ -76,6 +77,8 @@ class AmplitudeLogger:
                                 Each distinct value will show up as a user segment on the Amplitude dashboard.
         :param time_ms: The timestamp of the event in milliseconds since epoch. This will update the client event time.
                         If not specified, this value will assume the server upload time by default.
+        :param insert_id: An idempotency key
+                          If not specified, this value will be a random string
         :return:
         """
         event = {}
@@ -116,7 +119,7 @@ class AmplitudeLogger:
         if isinstance(additional_data, dict):
             event.update(additional_data)
 
-        event['insert_id'] = str(uuid.uuid4())
+        event["insert_id"] = insert_id or str(uuid.uuid4())
 
         return event
 
@@ -127,7 +130,7 @@ class AmplitudeLogger:
         :param event: event payload dictionary
         :return:
         """
-        assert pkg, 'Cannot log empty event package'
+        assert pkg, "Cannot log empty event package"
         if self.is_logging:
             result = self._sess.post(self.api_uri, json=pkg)
             #
@@ -135,21 +138,21 @@ class AmplitudeLogger:
             #
             return result
 
-    # def log_event(self, event):
-    #     """
-    #     Sends event to amplitude. Use create_event to create the payload.
-    #     :param event: event payload dictionary
-    #     :return:
-    #     """
-    #     if event:
-    #         if self.is_logging:
-    #             result = self._sess.post(self.api_uri, json=pkg)
-    #             #
-    #             # TODO: handle error codes
-    #             #
-    #             return result
-    #     else:
-    #         raise Exception("Cannot log empty event")
+    def log_event(self, event):
+        """
+        Sends event to amplitude. Use create_event to create the payload.
+        :param event: event payload dictionary
+        :return:
+        """
+        if event:
+            if self.is_logging:
+                result = self._sess.post(self.api_uri, json=pkg)
+                #
+                # TODO: handle error codes
+                #
+                return result
+        else:
+            raise Exception("Cannot log empty event")
 
     def track(
         self,
@@ -161,6 +164,7 @@ class AmplitudeLogger:
         time_ms=None,
         min_id_length=None,
         platform=None,
+        insert_id=None,
     ):
         """
         Tracks event with specified parameters.
@@ -176,6 +180,8 @@ class AmplitudeLogger:
                                 Each distinct value will show up as a user segment on the Amplitude dashboard.
         :param time_ms: The timestamp of the event in milliseconds since epoch. This will update the client event time.
                         If not specified, this value will assume the server upload time by default.
+        :param insert_id: An idempotency key
+                          If not specified, this value will be a random string
         :return:
         """
 
@@ -193,12 +199,11 @@ class AmplitudeLogger:
                 time_ms=time_ms,
                 min_id_length=min_id_length,
                 platform=platform,
+                insert_id=insert_id,
             )
         ]
 
-        result = self.log_event_package(
-            self.create_event_package(options=options, events=events)
-        )
+        result = self.log_event_package(self.create_event_package(options=options, events=events))
 
         return result
 
@@ -206,4 +211,4 @@ class AmplitudeLogger:
         #
         # TODO: handle batches larger than 10
         #
-        return self.log_event_package(self.create_event_package(events=events))
+        return self.log_event_package(self.create_event_package(events=batch))
