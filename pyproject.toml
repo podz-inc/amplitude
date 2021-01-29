@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "amplitude-python-2"
+name = "amplitude"
 version = "1.0.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
